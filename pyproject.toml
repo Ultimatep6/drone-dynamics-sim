@@ -1,0 +1,6 @@
+[project]
+name = "quad_sim"
+version = "0.1.0"
+
+[tool.setuptools]
+packages = ["quad_sim"]
