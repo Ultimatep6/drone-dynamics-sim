@@ -1,83 +1,93 @@
+from ast import Not
+
 import numpy as np
 
+from quad_sim.dynamics.motors import PropMotor
+from quad_sim.dynamics.rigid_body import RigidBody
 from quad_sim.math.references.bodyFixed import BodyFixed
-from quad_sim.math.references.earthFixed import EarthFixed
 
 
-class Quadcopter:
+class Quadcopter(RigidBody):
     def __init__(
         self,
         mass: int,
+        Ixx: float,
+        Iyy: float,
+        Izz: float,
         rotors: int = 4,
-        radius: float = 0.30,
-        EF_pos: np.ndarray = np.zeros((3, 1), dtype=np.float32),
+        arm_length: float = 0.30,
     ) -> None:
-        # Assume the center of mass is located at origin
-        self.CM = BodyFixed(pos=np.zeros(shape=(3, 1), dtype=np.float32))
+        # Inherit from the RigidBody Class
+        super().__init__(mass, Ixx, Iyy, Izz)
 
-        # By default 0,0,0
-        self.EF_pos = EarthFixed(pos=EF_pos)
+        # Configuration settings
+        self.motorPositions = (rotors, arm_length)
 
-        # kg
-        self.mass = mass
-
-        self.rotors = rotors
-
-    def __get_rotor_positions(self) -> list[BodyFixed]:
+    def __get_motor_positions(
+        self, nMotors: int, armLength: int | float
+    ) -> list[PropMotor]:
         """
-        Calculates the position of all the rotors assuming they are equidistant on the unit circle
+        Calculates the position of all the rotors assuming they are equidistant on the unit circle.
+        The returned thing is a list of PropMotor class objects
         """
+        dirs = [1, -1]
 
+        # ASSUMPTION: The rotors go CCW from the North basis vector
         pos = []
-        for rotor in range(self.rotors):
+
+        for i, rotor in enumerate(range(nMotors)):
             disp = np.array(
                 [
-                    [np.cos((2 * np.pi / self.rotors) * rotor)],
-                    [np.sin((2 * np.pi / self.rotors) * rotor)],
+                    [armLength * np.cos((2 * np.pi / nMotors) * rotor)],
+                    [armLength * np.sin((2 * np.pi / nMotors) * rotor)],
                     [0],
                 ]
             )
-
             disp[np.abs(disp) < 1e-15] = 0
-            pos.append(BodyFixed(self.CM.pos + disp))
+            dir = dirs[i % 2]
+            pos.append(PropMotor(BodyFixed.from_Array(disp, flag="position"), dir=dir))
+
         return pos
 
-    def __str__(self) -> str:
+    # TODO: Implement total forces calculations
+    def _get_total_forces():
+        raise NotImplementedError
+
+    def print_layout(self) -> str:
         rot_str = "\n".join(
             [
-                f"Coptor {rotor}: {self.__rotor_positions[rotor].pos.T}"
-                for rotor in range(self.rotors)
+                f"Motor_{rotor} : {self.motorPositions[rotor].position.vec.T}"
+                for rotor in range(len(self.motorPositions))
             ]
         )
-        
-        pos_str = f"Global CM Position {self.EF_pos.pos.T}"
+
         return (
             "Drone Layout: \n\
 -------------------------\n"
-            + rot_str +
-"\n\n------------------------\n\n"
-            + pos_str
+            + rot_str
+            + "\n\n------------------------\n\n"
         )
 
     @property
-    def EF_pos(self):
-        return self._EF_pos
+    def motorPositions(self):
+        return self._motorPositions
 
-    @EF_pos.setter
-    def EF_pos(self, value: EarthFixed):
-        if not isinstance(value, EarthFixed):
-            raise TypeError("EF_pos must be a WorldFixed")
+    @motorPositions.setter
+    def motorPositions(self, value: tuple[int, int | float]):
+        if len(value) != 2:
+            raise ValueError(
+                "The arguments for setting motorPositions must be of len 2"
+            )
         else:
-            self._EF_pos = value
+            nMotor, armLength = value
+            if not isinstance(nMotor, (int, float)):
+                raise TypeError("motors must be an int or float")
+            if not isinstance(armLength, (int, float)):
+                raise TypeError("armLength must be an int or float")
 
-    @property
-    def rotors(self):
-        return self._rotors
+            if nMotor < 2:
+                raise ValueError("rotors must be at least 2 ")
+            if armLength <= 0:
+                raise ValueError("armlength must be positive non-zero meters")
 
-    @rotors.setter
-    def rotors(self, value: int):
-        if not isinstance(value, int):
-            raise TypeError("rotors must be a int")
-        else:
-            self._rotors = value
-            self.__rotor_positions = self.__get_rotor_positions()
+            self._motorPositions = self.__get_motor_positions(nMotor, armLength)
