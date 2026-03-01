@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from quad_sim.math.references.earthFixed import EarthFixed
+from quad_sim.math.quaternion import Quaternion
 from quad_sim.math.rotations import _get_inertial_to_body
 
 
@@ -20,12 +20,12 @@ class BodyFixed:
     ):
         # We initiate the frame of reference with orthogonal basis vectors
         # X -- Roll Axis pointing forward (North)
-        # Y -- Pitch Axis pointing left of X (West)
-        # Z -- Yaw Axis pointing up
+        # Y -- Pitch Axis pointing left of X (East)
+        # Z -- Yaw Axis pointing down
 
-        self.__basisX = np.array([[1.0, 0.0, 0.0]], dtype=np.float32)
-        self.__basisY = np.array([[0.0, 1.0, 0.0]], dtype=np.float32)
-        self.__basisZ = np.array([[0.0, 0.0, 1.0]], dtype=np.float32)
+        self._basisX = np.array([[1.0, 0.0, 0.0]], dtype=np.float32)
+        self._basisY = np.array([[0.0, 1.0, 0.0]], dtype=np.float32)
+        self._basisZ = np.array([[0.0, 0.0, 1.0]], dtype=np.float32)
 
         self.__flag_list = [
             "position",
@@ -42,7 +42,7 @@ class BodyFixed:
         self.vec = [X, Y, Z]
 
     @classmethod
-    def from_EarthFixed(cls, objB: object, quaternion: np.ndarray, CM: object = None):
+    def from_EarthFixed(cls, objB: object, quaternion: Quaternion, CM: object = None):
         """
         A constructor that converts an EarthFixed vector into a BodyFixed vector
         """
@@ -50,7 +50,7 @@ class BodyFixed:
         if objB.__class__.__name__ != "EarthFixed":
             raise TypeError("obj_B must be an EarthFixed object")
 
-        rotation_matrix = _get_inertial_to_body(quaternion)
+        rotation_matrix = _get_inertial_to_body(quaternion.as_np())
 
         if objB.flag == "position":
             if CM.__class__.__name__ != "EarthFixed":
@@ -62,6 +62,33 @@ class BodyFixed:
 
         return cls.from_Array(vec_BF, objB.flag)
 
+    @classmethod
+    def from_Array(cls, arr: np.ndarray, flag: str = "position"):
+        flag_list = [
+            "position",
+            "velocity",
+            "acceleration",
+            "ang_velocity",
+            "ang_acceleration",
+            "force",
+            "moment",
+        ]
+
+        if not isinstance(arr, np.ndarray):
+            raise TypeError("arr must be a np.ndarray")
+
+        if not isinstance(flag, str):
+            raise TypeError("flag must be a string")
+
+        if flag not in flag_list:
+            raise ValueError(f"flag must be one of {' or '.join(flag_list)}")
+
+        return cls(*arr.ravel(), flag=flag)
+
+    def changeFlag(self, value: str):
+        self.flag = value
+        return self
+
     def __add__(self, other: BodyFixed | np.ndarray) -> BodyFixed:
         if isinstance(other, np.ndarray):
             if other.shape != self.vec.shape:
@@ -69,8 +96,8 @@ class BodyFixed:
             return BodyFixed.from_Array(self.vec + other, flag=self.flag)
 
         if isinstance(other, BodyFixed):
-            if self.flag != other.flag:
-                raise TypeError("Cannot subtract vectors with different flags")
+            # if self.flag != other.flag:
+            # raise TypeError("Cannot subtract vectors with different flags")
             return BodyFixed.from_Array(self.vec + other.vec, flag=self.flag)
 
         raise TypeError("Operand must be BodyFixed or ndarray")
@@ -82,8 +109,8 @@ class BodyFixed:
             return BodyFixed.from_Array(self.vec - other, flag=self.flag)
 
         if isinstance(other, BodyFixed):
-            if self.flag != other.flag:
-                raise TypeError("Cannot subtract vectors with different flags")
+            # if self.flag != other.flag:
+            # raise TypeError("Cannot subtract vectors with different flags")
             return BodyFixed.from_Array(self.vec - other.vec, flag=self.flag)
 
         raise TypeError("Operand must be BodyFixed or ndarray")
@@ -109,28 +136,13 @@ class BodyFixed:
 
         return self.flag == other.flag and np.allclose(self.vec, other.vec, atol=1e-12)
 
-    @classmethod
-    def from_Array(cls, arr: np.ndarray, flag: str = "position"):
-        flag_list = [
-            "position",
-            "velocity",
-            "acceleration",
-            "ang_velocity",
-            "ang_acceleration",
-            "force",
-            "moment",
-        ]
+    __radd__ = __add__
+    __rmul__ = __mul__
+    __rsub__ = __sub__
 
-        if not isinstance(arr, np.ndarray):
-            raise TypeError("arr must be a np.ndarray")
-
-        if not isinstance(flag, str):
-            raise TypeError("flag must be a string")
-
-        if flag not in flag_list:
-            raise ValueError(f"flag must be one of {' or '.join(flag_list)}")
-
-        return cls(*arr.ravel(), flag=flag)
+    @property
+    def T(self):
+        return BodyFixed.from_Array(self.vec.T, flag=self.flag)
 
     @property
     def vec(self):

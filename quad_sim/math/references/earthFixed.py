@@ -4,10 +4,11 @@ from typing import Type
 
 import numpy as np
 
+from quad_sim.math.quaternion import Quaternion
+from quad_sim.math.references.bodyFixed import BodyFixed
 from quad_sim.math.rotations import _get_body_to_inertial
 
 
-# TODO: Add flags for 'position','velocity','acceleration','velocity','force','moment' to then use for converting
 class EarthFixed:
     # Note that vec is the vecition of the drone COG
     def __init__(
@@ -38,16 +39,17 @@ class EarthFixed:
 
     @classmethod
     def from_BodyFixed(
-        cls, objB: object, quaternion: np.ndarray, CM: object = None, flag: str = ""
+        cls, objB: object, quaternion: Quaternion, CM: object = None, flag: str = ""
     ):
         """
         A constructor that converts an BodyFixed vector into a EarthFixed vector
         """
 
+
         if objB.__class__.__name__ != "BodyFixed":
             raise TypeError("obj_B must be an BodyFixed object")
 
-        rotation_matrix = _get_body_to_inertial(quaternion)
+        rotation_matrix = _get_body_to_inertial(quaternion.as_np())
 
         if objB.flag == "position":
             if CM.__class__.__name__ != "EarthFixed":
@@ -84,6 +86,10 @@ class EarthFixed:
 
         return cls(*arr.ravel(), flag=flag)
 
+    def changeFlag(self, value):
+        self.flag = value
+        return self
+
     def __add__(self, other: EarthFixed | np.ndarray) -> EarthFixed:
         if isinstance(other, np.ndarray):
             if other.shape != self.vec.shape:
@@ -91,8 +97,8 @@ class EarthFixed:
             return EarthFixed.from_Array(self.vec + other, flag=self.flag)
 
         if isinstance(other, EarthFixed):
-            if self.flag != other.flag:
-                raise TypeError("Cannot subtract vectors with different flags")
+            # if self.flag != other.flag:
+            #    raise TypeError("Cannot subtract vectors with different flags")
             return EarthFixed.from_Array(self.vec + other.vec, flag=self.flag)
 
         raise TypeError("Operand must be EarthFixed or ndarray")
@@ -104,8 +110,8 @@ class EarthFixed:
             return EarthFixed.from_Array(self.vec - other, flag=self.flag)
 
         if isinstance(other, EarthFixed):
-            if self.flag != other.flag:
-                raise TypeError("Cannot subtract vectors with different flags")
+            # if self.flag != other.flag:
+            #    raise TypeError("Cannot subtract vectors with different flags")
             return EarthFixed.from_Array(self.vec - other.vec, flag=self.flag)
 
         raise TypeError("Operand must be EarthFixed or ndarray")
@@ -130,6 +136,14 @@ class EarthFixed:
             return NotImplemented
 
         return self.flag == other.flag and np.allclose(self.vec, other.vec, atol=1e-12)
+
+    __radd__ = __add__
+    __rmul__ = __mul__
+    __rsub__ = __sub__
+
+    @property
+    def T(self):
+        return EarthFixed.from_Array(self.vec.T, flag=self.flag)
 
     @property
     def vec(self):
