@@ -1,19 +1,22 @@
-from abc import ABC, ABCMeta, abstractmethod
-from typing import List
+from abc import ABC, abstractmethod
+from typing import Tuple
 from quad_sim.math.references.bodyFixed         import      BodyFixed
 
 
-class AllocatorBase:
-    @abstractmethod
-    def allocate(self, thrust_torques: List[BodyFixed, BodyFixed]) -> list[float]:
-        """
-        Compute the motor throttle values required to achieve the desired thrust and torques.
+class AllocatorBase(ABC):
 
-        :param thrust_torques: A list containing desired thrust and torque values in the body-fixed frame.
-        :type thrust_torques: List[BodyFixed, BodyFixed]
-        :return: A list of throttle values for each motor, where each value is typically normalized between 0 and 1.
+    @abstractmethod
+    def allocate(self, thrust_torques: Tuple[BodyFixed, BodyFixed]) -> list[float]:
+        """
+        Calculate the motor RPMs required to achieve the desired thrust and torques.
+
+        :param thrust_torques: A tuple containing desired thrust and torque values in the body-fixed frame.
+        :type thrust_torques: Tuple[BodyFixed, BodyFixed]
+        :return: A list of RPM values for each motor.
         :rtype: list[float]
         """
         pass
+
+    
 
     

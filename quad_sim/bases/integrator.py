@@ -1,28 +1,39 @@
-from abc import ABCMeta, abstractmethod, ABC
+from abc import abstractmethod, ABC
 
-from quad_sim.templates.droneModel import DroneModel
 from quad_sim.dynamics.state import StateVector
+from quad_sim.bases.dynamics import DynamicsBase
+from quad_sim.bases.environment import EnvironmentBase
+from quad_sim.math.references.bodyFixed import BodyFixed
 
 class IntegratorBase(ABC):
-    def __init__(self, drone_model: DroneModel, dt: float):
+    def __init__(self, dt: float):
         """
         Standard configuration for all integrators.
         
-        :param drone_model: Reference to the Drone object (to read/write state).
-        :type drone_model: DroneModel
         :param dt: Fixed delta time step.
         :type dt: float
         """
-
-        self.drone = drone_model
         self.dt = dt
 
         # Basic validation to ensure config is sane
         if self.dt <= 0:
             raise ValueError(f"Time step must be positive, got {self.dt}")
-
+        
     @abstractmethod
-    def step(self, state:StateVector) -> None:
+    def integrate(self, F:BodyFixed, M:BodyFixed, state:StateVector) -> StateVector:
+        """
+        Function should step forward one set of calculations for the integrator.
+        This is where the intrgration scheme can be implemented (e.g. Euler, RK4, etc.)
+
+        :param state: Reference to the StateVector.
+        :type state: StateVector
+        
+        :return: Returns the updated state of the drone after applying the integration step.
+        :rtype: StateVector
+        """
+        pass
+
+    def step(self, state0:StateVector, model:DynamicsBase, environment: EnvironmentBase) -> StateVector:
         """
         Function should step forward one set of calculations for the integrator
 
@@ -31,3 +42,9 @@ class IntegratorBase(ABC):
         
         :return: Updates the state of the drone
         """
+
+        F, M = model.compute_forces_and_moments(environment, state0)
+        # Update the state vector based on the computed forces and moments
+        state1 = self.integrate(F,M,state0)
+
+        return state1

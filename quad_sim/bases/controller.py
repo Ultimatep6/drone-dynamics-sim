@@ -1,7 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import List
 
-class ControllerBase(ABCMeta):
+class ControllerBase(ABC):
     """
     Abstract base class for a radio controller interface in a drone simulation.
     Defines the required methods for connecting, calibrating, reading axis and switch values, and checking connection status.
@@ -67,7 +67,7 @@ class ControllerBase(ABCMeta):
     @abstractmethod
     def is_connected(self) -> bool:
         """
-        Check if the rigid body is still connected to controller.
+        Check if the controler is still connected to simulation.
         Should include some fail safes
         
         :return: Boolean verification that the connection is successful or not

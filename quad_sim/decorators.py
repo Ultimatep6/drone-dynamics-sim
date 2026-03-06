@@ -1,4 +1,4 @@
-def agentConfig():
+def topLevel():
     """
     Decorator that attaches HDF5 group metadata to a dataclass.
     """

@@ -1,44 +1,52 @@
-from abc import ABC, ABCMeta, abstractmethod
-from typing import List
+from abc import ABC, abstractmethod
 
 from quad_sim.bases.dynamics            import      DynamicsBase
 from quad_sim.bases.controller          import      ControllerBase
 from quad_sim.bases.pilot               import      PilotBase
 from quad_sim.bases.allocator           import      AllocatorBase
 from quad_sim.bases.integrator           import     IntegratorBase
+from quad_sim.bases.setpoints           import      Setpoints
+from quad_sim.bases.environment         import      EnvironmentBase
 
 
-from quad_sim.config                            import      VehicleConfig
 from quad_sim.dynamics.state                    import      StateVector
-from quad_sim.math.references.bodyFixed         import      BodyFixed
 
 
 
 class DroneBase(ABC):
 
-    def __init_subclass__(cls, **kwargs):
-        required_attrs = {'iD', 'PILOT', 'ALLOCATOR', 'MODEL', 'CONTROLLER', 'INTEGRATOR'}
-        for attr in required_attrs:
-            if not hasattr(cls, attr):
-                raise NotImplementedError(f"Class {cls.__name__} must define {attr}")
+    def __init__(
+                    self, drone_id: str, init_state:StateVector, pilot: PilotBase,
+                    dynamics: DynamicsBase, allocator: AllocatorBase,
+                    controller: ControllerBase, integrator: IntegratorBase, environment: EnvironmentBase
+                ):
         
-        if not isinstance(cls.iD, str):
-            raise TypeError(f"{cls.__name__}.iD must be a string identifier for the drone model.")
-        
-        if not issubclass(cls.PILOT, PilotBase):
-            raise TypeError(f"{cls.__name__}.PILOT must be a subclass of PilotBase")
-        
-        if not issubclass(cls.ALLOCATOR, AllocatorBase):
-            raise TypeError(f"{cls.__name__}.ALLOCATOR must be a subclass of AllocatorBase")
-        
-        if not issubclass(cls.MODEL, DynamicsBase):
-            raise TypeError(f"{cls.__name__}.MODEL must be a subclass of DynamicsBase")
-        
-        if not issubclass(cls.CONTROLLER, ControllerBase):
-            raise TypeError(f"{cls.__name__}.CONTROLLER must be a subclass of ControllerBase")
+        if not isinstance(drone_id, str):
+            raise TypeError(f"drone_id must be a string, got {type(drone_id)}")
+        if not isinstance(init_state, StateVector):
+            raise TypeError(f"init_state must be a StateVector, got {type(init_state)}")
+        if not isinstance(pilot, PilotBase):
+            raise TypeError(f"pilot must be a PilotBase subclass, got {type(pilot)}")
+        if not isinstance(dynamics, DynamicsBase):
+            raise TypeError(f"dynamics must be a DynamicsBase subclass, got {type(dynamics)}")
+        if not isinstance(allocator, AllocatorBase):
+            raise TypeError(f"allocator must be a AllocatorBase subclass, got {type(allocator)}")
+        if not isinstance(controller, ControllerBase):
+            raise TypeError(f"controller must be a ControllerBase subclass, got {type(controller)}")
+        if not isinstance(integrator, IntegratorBase):
+            raise TypeError(f"integrator must be a IntegratorBase subclass, got {type(integrator)}")
+        if not isinstance(environment, EnvironmentBase):
+            raise TypeError(f"environment must be a EnvironmentBase subclass, got {type(environment)}")
 
-        if not issubclass(cls.INTEGRATOR, IntegratorBase):
-            raise TypeError(f"{cls.__name__}.INTEGRATOR must be a subclass of IntegratorBase")
+        self.iD = drone_id
+        self.state = init_state
+        self.pilot = pilot
+        self.model = dynamics
+        self.allocator = allocator
+        self.controller = controller
+        self.integrator = integrator
+        self.environment = environment
+
 
     def step(self) -> None:
         """
@@ -47,36 +55,22 @@ class DroneBase(ABC):
         updating physics, and recalculating sensor readings as necessary.
         """
         self.target = self.get_setpoints()
-        self.response = self.step_PID(self.target)
-        self.setThrottle(self.ALLOCATOR.calcRates(self.response))
+        self.response = self.pilot.compute_control(self.state, self.target)
+        self.model.set_motor_rpm(self.allocator.allocate(self.response))
         
-        self.INTEGRATOR.step()
-
-        pass
+        self.state = self.integrator.step(self.state, self.model, self.environment)
 
     @abstractmethod
-    def get_state(self) -> dict:
+    def get_setpoints(self) -> Setpoints:
         """
-        Returns the current state of the drone.
-        This method retrieves and returns the current state variables of the drone,
-        such as position, velocity, orientation, and angular velocity.
-        Returns:
-            dict: A dictionary containing the current state of the drone with keys such as
-                  'position', 'velocity', 'orientation', and 'angular_velocity'.
-        """
-        pass
+        Generates the desired setpoints for the drone's operation.
 
-    @abstractmethod
-    def get_setpoints(self) -> dict:
-        """
-        Converts the control inputs into setpoints using the current FlightModeBase.
-
-        This method processes the control inputs and generates the desired setpoints
-        for the drone's operation, such as target positions, velocities, or orientations.
+        This method processes the current flight mode and control inputs to produce
+        the desired setpoints, such as target positions, velocities, orientations, 
+        or thrust levels, required for the drone's operation.
 
         Returns:
-            dict: A dictionary containing the setpoints with keys such as
-                  'position_setpoint', 'velocity_setpoint', 'orientation_setpoint', 'thrust_setpoint'.
+            Setpoints: An object containing the calculated setpoints.
         """
         pass
 

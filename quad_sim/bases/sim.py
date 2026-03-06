@@ -1,43 +1,40 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List
 from quad_sim.bases.drone import DroneBase
-from quad_sim.bases.environment import EnvironmentBase
-from quad_sim.bases.config import BuildableConfig
+from quad_sim.bases.configuration import BuildableConfig
 
 class NCopterBase(ABC):
-    def __init__(self, agents:List[BuildableConfig], env: EnvironmentBase, log=None):
+    def __init__(self, agents:List[BuildableConfig], log=None):
 
         # Check if the agent being passed is top level (droneBase) or not
         self.__checkTopLevel(agents)
         # Construct all the droneBase objects and save them
-        self.__ent = {}
+        self.__entities = {}
         for dr in agents:
             inst = dr.construct()
-            self.__ent[inst.iD] = inst
+            self.__entities[inst.iD] = inst
 
         # Construct the logger
         self.__logger = log
 
         # Construct the enviornmental models (TBD)
-        return NotImplementedError
     
     def run(self):
         """
-        Executes the simulation loop for all entities.
+        Advances the simulation by one tick for all entities.
 
-        This method iterates through all entities in the simulation, calling their `step` method to update their state.
-        After updating each entity, it advances the logger to record the current state of the simulation.
-
-        Steps:
-        - Calls `step` on each entity to update its state.
-        - Calls `step` on the logger to record the simulation state.
+        The caller is responsible for looping over the desired number of ticks.
+        Each call steps every entity once and, if a logger is attached, records
+        the current state.
         """
-        for id, dr in self.__entities.items():
+        for iD, dr in self.__entities.items():
             dr.step()
+        if self.__logger is not None:
             self.__logger.step()
 
     def close(self):
-        self.__logger.finalize()
+        if self.__logger is not None:
+            self.__logger.finalize()
 
     def __checkTopLevel(self, agents:List[BuildableConfig]):
         """
@@ -63,7 +60,7 @@ class NCopterBase(ABC):
         :param iD: The entity ID to be checked.
         :return: True if the entity ID already exists, False otherwise.
         """
-        if iD in self.entities.keys():
+        if iD in self.__entities:
             # TODO: add a log response
             return True
         return False
@@ -84,18 +81,18 @@ class NCopterBase(ABC):
         for dr in agents:
             inst = dr.construct()
             if not self.__checkEntID(inst.iD):
-                self.__ent[inst.iD] = inst
+                self.__entities[inst.iD] = inst
 
 
     @property
     def entities(self):
         return self.__entities
 
-    def appendEntity(self, agents: BuildableConfig):
+    def appendEntity(self, agents: list[BuildableConfig]):
         self.__checkTopLevel(agents)
         self.__addEntities(agents)
 
-    def removeEntity(self, entity: List[str | DroneBase]):
+    def removeEntity(self, entity: str | DroneBase):
         """
         Removes an entity from the simulation.
 
@@ -105,7 +102,7 @@ class NCopterBase(ABC):
 
         :param entity: The entity to be removed, specified as either a string (entity ID)
                        or a DroneBase object.
-        :type entity: List[str | DroneBase]
+        :type entity: str | DroneBase
         :raises TypeError: If the provided entity is neither a string nor a DroneBase object.
         """
         if isinstance(entity, DroneBase):
@@ -116,7 +113,7 @@ class NCopterBase(ABC):
             raise TypeError("Entity must be either a DroneBase object or a string representing the entity ID.")
         
         if self.__checkEntID(iD):
-            del self.__ent[iD]
+            del self.__entities[iD]
         else:
             raise KeyError(f"Entity with ID '{iD}' does not exist in the simulation.")
             

@@ -1,8 +1,9 @@
-from abc import ABCMeta, abstractmethod, ABC
-from typing import List
+from abc import abstractmethod, ABC
+from typing import Tuple
 
 from quad_sim.math.references.bodyFixed import BodyFixed
 from quad_sim.dynamics.state            import      StateVector
+from quad_sim.bases.setpoints import Setpoints
 
 
 class PilotBase(ABC):
@@ -11,15 +12,16 @@ class PilotBase(ABC):
         - Receive the inputs of an RController
     """
     @abstractmethod
-    def step_PID(self, state:StateVector) -> List[BodyFixed, BodyFixed]:
+    def compute_control(self, state:StateVector, setpoints: Setpoints) -> Tuple[BodyFixed, BodyFixed]:
         """
-        Returns the thrust and torques in the Body Frame.
+        Computes the control outputs based on the current state and desired setpoints.
 
-        This method calculates and returns the thrust and torques required for the drone's operation
-        in the body-fixed reference frame.
-
-        Returns:
-            List[BodyFixed, BodyFixed]: A list containing thrust and torques in the body frame.
+        :param state: The current state of the system.
+        :type state: StateVector
+        :param setpoints: The desired setpoints for the system.
+        :type setpoints: Setpoints
+        :return: A tuple containing two BodyFixed objects representing the thrust and moments.
+        :rtype: Tuple[BodyFixed, BodyFixed]
         """
         pass
     
