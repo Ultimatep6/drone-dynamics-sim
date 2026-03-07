@@ -5,10 +5,9 @@ from dataclasses import dataclass
 import numpy as np
 from numpy import cos as c
 from numpy import sin as s
-from pydantic.type_adapter import TypeAdapterT
 
-from quad_sim.math.safe_trig import asin as As
-from quad_sim.math.safe_trig import atan2 as At
+from quad_sim.funcs import asin as As
+from quad_sim.funcs import atan2 as At
 
 
 @dataclass
@@ -90,7 +89,7 @@ class Quaternion:
         # roll (X axis rotation)
         roll = At(2 * (w * x + y * z), w * w - x * x - y * y + z * z)
 
-        from quad_sim.math.eulerian import Eulerian  # avoid circular import
+        from quad_sim.orientation.eulerian import Eulerian  # avoid circular import
 
         return Eulerian(yaw, pitch, roll)
 
@@ -99,7 +98,7 @@ class Quaternion:
     # -----------------------------
     @classmethod
     def from_euler(cls, objB: "Eulerian"):
-        from quad_sim.math.eulerian import Eulerian  # avoid circular import
+        from quad_sim.orientation.eulerian import Eulerian  # avoid circular import
 
         if not isinstance(objB, Eulerian):
             raise TypeError("from_euler expects an Eulerian object")

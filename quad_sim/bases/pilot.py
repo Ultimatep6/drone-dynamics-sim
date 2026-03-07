@@ -1,8 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import Tuple
 
-from quad_sim.math.references.bodyFixed import BodyFixed
-from quad_sim.dynamics.state            import      StateVector
+from quad_sim.references.bodyFixed import BodyFixed
+from quad_sim.bases.state            import      StateVector
 from quad_sim.bases.setpoints import Setpoints
 
 

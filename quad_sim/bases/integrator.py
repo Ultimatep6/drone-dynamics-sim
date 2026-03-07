@@ -1,9 +1,9 @@
 from abc import abstractmethod, ABC
 
-from quad_sim.dynamics.state import StateVector
+from quad_sim.bases.state import StateVector
 from quad_sim.bases.dynamics import DynamicsBase
 from quad_sim.bases.environment import EnvironmentBase
-from quad_sim.math.references.bodyFixed import BodyFixed
+from quad_sim.references.bodyFixed import BodyFixed
 
 class IntegratorBase(ABC):
     def __init__(self, dt: float):

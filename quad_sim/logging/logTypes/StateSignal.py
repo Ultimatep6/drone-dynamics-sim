@@ -3,7 +3,7 @@ from typing import Annotated
 import numpy as np
 from pydantic import AfterValidator, BaseModel, Field
 
-from quad_sim.dynamics.state import StateVector
+from exampleSetup.default.state import StateVector
 from quad_sim.misc.decorators import loggerGroup
 
 

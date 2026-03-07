@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 from pydantic import BaseModel, Field
 
-from quad_sim.config import MotorConfig
+from exampleSetup.default.config import MotorConfig
 from quad_sim.dynamics.motors import PropMotor
 from quad_sim.math.references.bodyFixed import BodyFixed
 from quad_sim.misc.decorators import loggerGroup

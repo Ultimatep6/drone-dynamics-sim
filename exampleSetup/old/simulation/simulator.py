@@ -1,6 +1,6 @@
 from dataclasses import astuple, dataclass
 
-from quad_sim.config import (
+from exampleSetup.default.config import (
     IntegratorConfig,
     NCopterConfig,
     SimulatorConfig,

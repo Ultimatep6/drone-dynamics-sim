@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from quad_sim.math.quaternion import Quaternion
-from quad_sim.math.rotations import _get_inertial_to_body
+from quad_sim.orientation.quaternion import Quaternion
+from quad_sim.funcs import _get_inertial_to_body
 
 
 class BodyFixed:

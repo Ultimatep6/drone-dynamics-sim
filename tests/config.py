@@ -2,7 +2,7 @@ from dataclasses import astuple
 
 import numpy as np
 
-from quad_sim.config import *
+from exampleSetup.default.config import *
 from quad_sim.simulation.simulator import nCopterSimulator
 
 bettyConfig = VehicleConfig(

@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from quad_sim.dynamics.state import StateVector
+from exampleSetup.default.state import StateVector
 from quad_sim.math.references.bodyFixed import BodyFixed
 from quad_sim.math.references.earthFixed import EarthFixed
 

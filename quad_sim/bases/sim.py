@@ -123,3 +123,7 @@ class NCopterBase(ABC):
     #         raise TypeError("New simulation config must be a SimulatorConfig class")
     #     else:
     #         self.__sim = value
+
+    def __str__(self):
+        return f"NCopterBase with {len(self.__entities)} entities: {list(self.__entities.keys())}"
+    

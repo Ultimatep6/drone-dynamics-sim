@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.linalg import solve
 
-from quad_sim.config import VehicleConfig
+from exampleSetup.default.config import VehicleConfig
 from quad_sim.control.RC import RC
 from quad_sim.control.systems.AutoPilot import AutoPilot
 from quad_sim.simulation.drone import Drone

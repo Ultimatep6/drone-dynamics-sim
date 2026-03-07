@@ -5,7 +5,7 @@ from numpy import cos as c
 from numpy import sin as s
 from numpy import tan as t
 
-from quad_sim.config import MotorConfig
+from exampleSetup.default.config import MotorConfig
 from quad_sim.math.references.bodyFixed import BodyFixed
 
 

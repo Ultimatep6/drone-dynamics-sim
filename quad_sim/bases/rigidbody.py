@@ -7,7 +7,7 @@ class RigidBody:
     A simple data container for the physical properties of a rigid body.
     """
     mass: float
-    inertia_tensor: np.ndarray
+    inertia_tensor: np.ndarray(shape=(3, 3))
 
     def __post_init__(self):
         """Pydantic-like validation after initialization."""

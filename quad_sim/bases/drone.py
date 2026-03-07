@@ -9,7 +9,7 @@ from quad_sim.bases.setpoints           import      Setpoints
 from quad_sim.bases.environment         import      EnvironmentBase
 
 
-from quad_sim.dynamics.state                    import      StateVector
+from quad_sim.bases.state                    import      StateVector
 
 
 

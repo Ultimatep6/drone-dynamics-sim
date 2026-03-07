@@ -1,7 +1,7 @@
 import h5py
 import pytest
 
-from quad_sim.config import VehicleConfig
+from exampleSetup.default.config import VehicleConfig
 from quad_sim.simulation.drone import Drone
 from quad_sim.utils.loggerV2 import NCopterLogger
 

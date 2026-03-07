@@ -4,8 +4,8 @@ import numpy as np
 from numpy import cos as c
 from numpy import sin as s
 
-from quad_sim.math.safe_trig import asin as As
-from quad_sim.math.safe_trig import atan2 as At
+from quad_sim.funcs import asin as As
+from quad_sim.funcs import atan2 as At
 
 
 @dataclass
@@ -42,7 +42,7 @@ class Eulerian:
         cp, sp = c(self.pitch / 2), s(self.pitch / 2)
         cr, sr = c(self.roll / 2), s(self.roll / 2)
 
-        from quad_sim.math.quaternion import Quaternion  # avoid circular import
+        from quad_sim.orientation.quaternion import Quaternion  # avoid circular import
 
         return Quaternion(
             cy * cp * cr + sy * sp * sr,

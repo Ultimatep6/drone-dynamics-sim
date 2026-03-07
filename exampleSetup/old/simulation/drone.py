@@ -4,14 +4,14 @@ from typing import List, Tuple
 
 import numpy as np
 
-from quad_sim.config import IntegratorConfig, VehicleConfig
+from exampleSetup.default.config import IntegratorConfig, VehicleConfig
 from quad_sim.control.config.autopilotConf import AutopilotConfig
 from quad_sim.control.config.flightMode import FlightMode
 from quad_sim.control.RC import RC
 from quad_sim.control.systems.Allocator import Allocator
 from quad_sim.control.systems.AutoPilot import AutoPilot
 from quad_sim.dynamics.quadcopter import Quadcopter
-from quad_sim.dynamics.state import StateVector
+from exampleSetup.default.state import StateVector
 from quad_sim.math.integrators import ForwardEulerIntegrator
 from quad_sim.math.quaternion import Quaternion
 from quad_sim.math.references.bodyFixed import BodyFixed

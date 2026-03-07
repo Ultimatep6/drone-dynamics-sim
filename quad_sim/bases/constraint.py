@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from quad_sim.dynamics.state                    import      StateVector
+from quad_sim.bases.state                    import      StateVector
 
 class Constraint(ABC):
     @abstractmethod

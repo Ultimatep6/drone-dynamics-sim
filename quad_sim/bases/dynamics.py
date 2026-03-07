@@ -4,9 +4,9 @@ import numpy as np
 
 from quad_sim.bases.rigidbody import RigidBody
 from quad_sim.bases.motor import MotorBase
-from quad_sim.math.references.bodyFixed import BodyFixed
+from quad_sim.references.bodyFixed import BodyFixed
 from quad_sim.bases.environment import EnvironmentBase
-from quad_sim.dynamics.state import StateVector
+from quad_sim.bases.state import StateVector
 
 
 class DynamicsBase(ABC):

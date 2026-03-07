@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
-from quad_sim.math.references.bodyFixed         import      BodyFixed
+from quad_sim.references.bodyFixed         import      BodyFixed
 
 
 class AllocatorBase(ABC):

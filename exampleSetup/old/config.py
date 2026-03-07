@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 from pydantic.dataclasses import dataclass
 
 from quad_sim.control.config.autopilotConf import AutopilotConfig
-from quad_sim.dynamics.state import StateVector
+from exampleSetup.default.state import StateVector
 
 # ---------------------------------------
 # Settings

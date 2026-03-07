@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy as np
 
-from quad_sim.config import IntegratorConfig
+from exampleSetup.default.config import IntegratorConfig
 from quad_sim.math.quaternion import Quaternion
 from quad_sim.math.references.bodyFixed import BodyFixed
 from quad_sim.math.references.earthFixed import EarthFixed

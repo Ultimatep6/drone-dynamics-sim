@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
-from quad_sim.math.references.earthFixed import EarthFixed
-from quad_sim.math.references.bodyFixed import BodyFixed
-from quad_sim.math.quaternion import Quaternion
+from quad_sim.references.earthFixed import EarthFixed
+from quad_sim.references.bodyFixed import BodyFixed
+from quad_sim.orientation.quaternion import Quaternion
 
 import numpy as np
 

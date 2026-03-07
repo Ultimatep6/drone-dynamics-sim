@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from quad_sim.config import (
+from exampleSetup.default.config import (
     IntegratorConfig,
     LayoutConfig,
     MotorConfig,
@@ -13,7 +13,7 @@ from quad_sim.control.config.allocatorInput import AllocatorInput
 from quad_sim.control.config.autopilotConf import AutopilotConfig
 from quad_sim.control.config.flightMode import FlightMode
 from quad_sim.dynamics.motors import PropMotor
-from quad_sim.dynamics.state import StateVector
+from exampleSetup.default.state import StateVector
 from quad_sim.simulation.drone import Drone
 
 DEFAULT = VehicleConfig(

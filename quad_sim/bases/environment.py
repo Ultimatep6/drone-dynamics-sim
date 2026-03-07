@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
-from quad_sim.math.references.bodyFixed import BodyFixed
-from quad_sim.dynamics.state            import      StateVector
+from quad_sim.references.bodyFixed import BodyFixed
+from quad_sim.bases.state            import      StateVector
 
 class EnvironmentEffect(ABC):
     @abstractmethod
@@ -12,7 +12,7 @@ class EnvironmentEffect(ABC):
          and returns the resulting forces and moments as a tuple of BodyFixed objects.
         """
 
-class EnvironmentBase():
+class EnvironmentBase(ABC):
     def __init__(self, effects: list[EnvironmentEffect]):
         self.effects = effects
     

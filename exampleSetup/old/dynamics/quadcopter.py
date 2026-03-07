@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from quad_sim.config import LayoutConfig, MotorConfig, VehicleConfig
+from exampleSetup.default.config import LayoutConfig, MotorConfig, VehicleConfig
 from quad_sim.dynamics.motors import PropMotor
 from quad_sim.dynamics.rigid_body import RigidBody
 from quad_sim.math.references.bodyFixed import BodyFixed
