@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 
 from quad_sim.bases.state import StateVector
-from quad_sim.bases.dynamics import DynamicsBase
+from quad_sim.bases.dynamics import DynamicsBase,RigidBody
 from quad_sim.bases.environment import EnvironmentBase
 from quad_sim.references.bodyFixed import BodyFixed
 
@@ -20,7 +20,7 @@ class IntegratorBase(ABC):
             raise ValueError(f"Time step must be positive, got {self.dt}")
         
     @abstractmethod
-    def integrate(self, F:BodyFixed, M:BodyFixed, state:StateVector) -> StateVector:
+    def integrate(self, acc:BodyFixed, alpha:BodyFixed, state:StateVector,) -> StateVector:
         """
         Function should step forward one set of calculations for the integrator.
         This is where the intrgration scheme can be implemented (e.g. Euler, RK4, etc.)
@@ -44,7 +44,8 @@ class IntegratorBase(ABC):
         """
 
         F, M = model.compute_forces_and_moments(environment, state0)
+        a, alpha = model.compute_accelerations(F, M, state0)
         # Update the state vector based on the computed forces and moments
-        state1 = self.integrate(F,M,state0)
+        state1 = self.integrate(a,alpha,state0)
 
         return state1

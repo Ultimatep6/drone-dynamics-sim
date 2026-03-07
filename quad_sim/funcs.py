@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from quad_sim.references.bodyFixed import BodyFixed
     from quad_sim.references.earthFixed import EarthFixed
     from quad_sim.bases.state import StateVector
+    from quad_sim.orientation.quaternion import Quaternion
 
 """
 The rotation convention is ZYX in Eurlerian or yaw-pitch-roll
@@ -147,3 +148,122 @@ def _get_body_to_inertial(quaternion_orientation: np.ndarray) -> np.ndarray:
 
 def _get_inertial_to_body(quaternion_orientation: np.ndarray) -> np.ndarray:
     return _get_body_to_inertial(quaternion_orientation).T
+
+
+def compute_aB(
+    mass: int | float, F_B: BodyFixed, omega_B: BodyFixed, vel_B: BodyFixed
+) -> BodyFixed:
+    # --- mass checks ---
+    if not isinstance(mass, (int, float)):
+        raise TypeError("mass must be an int or float")
+
+    if mass <= 0:
+        raise ValueError("mass must be positive")
+
+    # --- F_B checks ---
+    if not isinstance(F_B, BodyFixed):
+        raise TypeError("F_B must be a BodyFixed vector")
+
+    if F_B.vec.shape != (3, 1):
+        raise ValueError("F_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(F_B.vec)):
+        raise ValueError("F_B contains non-finite values")
+
+    # --- omega_B checks ---
+    if not isinstance(omega_B, BodyFixed):
+        raise TypeError("omega_B must be a BodyFixed vector")
+
+    if omega_B.vec.shape != (3, 1):
+        raise ValueError("omega_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(omega_B.vec)):
+        raise ValueError("omega_B contains non-finite values")
+
+    # --- vel_B checks ---
+    if not isinstance(vel_B, BodyFixed):
+        raise TypeError("vel_B must be a BodyFixed vector")
+
+    if vel_B.vec.shape != (3, 1):
+        raise ValueError("vel_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(vel_B.vec)):
+        raise ValueError("vel_B contains non-finite values")
+
+    # --- compute acceleration ---
+    res = F_B * (1.0 / mass) - omega_B * vel_B
+    res.flag = "acceleration"
+    return res
+
+
+def compute_alphaB(
+    inertia: np.ndarray, M_B: BodyFixed, omega_B: BodyFixed
+) -> BodyFixed:
+    # --- inertia checks ---
+    if not isinstance(inertia, np.ndarray):
+        raise TypeError("inertia must be a numpy ndarray")
+
+    if inertia.shape != (3, 3):
+        raise ValueError("inertia must be a 3×3 matrix")
+
+    if not np.all(np.isfinite(inertia)):
+        raise ValueError("inertia contains non-finite values")
+
+    if np.linalg.det(inertia) == 0:
+        raise ValueError("inertia matrix must be invertible")
+
+    # --- M_B checks ---
+    if not isinstance(M_B, BodyFixed):
+        raise TypeError("M_B must be a BodyFixed vector")
+
+    if M_B.vec.shape != (3, 1):
+        raise ValueError("M_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(M_B.vec)):
+        raise ValueError("M_B contains non-finite values")
+
+    # --- omega_B checks ---
+    if not isinstance(omega_B, BodyFixed):
+        raise TypeError("omega_B must be a BodyFixed vector")
+
+    if omega_B.vec.shape != (3, 1):
+        raise ValueError("omega_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(omega_B.vec)):
+        raise ValueError("omega_B contains non-finite values")
+
+    # --- compute angular acceleration ---
+    rhs = M_B.vec - np.cross(omega_B.vec, inertia @ omega_B.vec, axis=0)
+    alpha_vec = np.linalg.solve(inertia, rhs)
+
+    return BodyFixed.from_Array(alpha_vec, flag="ang_acceleration")
+
+
+def compute_q_rate(quaternion: Quaternion, omega_B: BodyFixed) -> Quaternion:
+    # --- quaternion checks ---
+    quaternion = quaternion.normalized()
+
+    # --- omega_B checks ---
+    if not isinstance(omega_B, BodyFixed):
+        raise TypeError("omega_B must be a BodyFixed vector")
+
+    if omega_B.vec.shape != (3, 1):
+        raise ValueError("omega_B.vec must have shape (3, 1)")
+
+    if not np.all(np.isfinite(omega_B.vec)):
+        raise ValueError("omega_B contains non-finite values")
+
+    # --- compute quaternion rate ---
+    p, q, r = omega_B.vec.T.ravel()
+
+    mat = np.array(
+        [
+            [0, -p, -q, -r],
+            [p, 0, r, -q],
+            [q, -r, 0, p],
+            [r, q, -p, 0],
+        ],
+        dtype=float,
+    )
+
+    return Quaternion.unpackArray( 0.5 * (mat @ quaternion.as_np()) )

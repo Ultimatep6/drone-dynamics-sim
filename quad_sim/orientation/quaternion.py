@@ -56,6 +56,8 @@ class Quaternion:
     # Hamilton product // Change of quaternion orientation
     # -----------------------------
     def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            return Quaternion(self.w * other, self.x * other, self.y * other, self.z * other)
         if not isinstance(other, Quaternion):
             return NotImplemented
 
@@ -68,6 +70,20 @@ class Quaternion:
             float(w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2),
             float(w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2),
             float(w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2),
+        )
+    
+    def __add__(self, other):
+        if not isinstance(other, Quaternion):
+            return NotImplemented
+
+        w1, x1, y1, z1 = self.as_np().flatten()
+        w2, x2, y2, z2 = other.as_np().flatten()
+
+        return Quaternion(
+            float(w1 + w2),
+            float(x1 + x2),
+            float(y1 + y2),
+            float(z1 + z2),
         )
 
     # -----------------------------

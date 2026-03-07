@@ -18,6 +18,7 @@ from classes import (
     DefaultMotor,
     DefaultPilot,
     DefaultDrone,
+    DefaultConstraints,
     WindEffect,
 )
 
@@ -140,6 +141,23 @@ class EnvironmentConfig(BuildableConfig):
         return DefaultEnvironment(effects=self.effects)
 
 
+# ── Constraints ──────────────────────────────────────────────────────────────
+
+from quad_sim.bases.constraint import Constraint
+
+class ConstraintConfig(BuildableConfig):
+    """Configuration for the state constraints applied after each integration step."""
+
+    def __init__(self, constraints: list[Constraint] | None = None):
+        super().__init__(DefaultConstraints)
+        self.constraints = constraints
+
+    def construct(self) -> DefaultConstraints:
+        if self.constraints is None:
+            return DefaultConstraints()  # ships with sensible defaults
+        return DefaultConstraints(constraints=self.constraints)
+
+
 # ── Drone ────────────────────────────────────────────────────────────────────
 
 @topLevel()
@@ -159,6 +177,7 @@ class DroneConfig(BuildableConfig):
         controller: ControllerConfig = ControllerConfig(),
         integrator: IntegratorConfig = IntegratorConfig(dt=0.01),
         environment: EnvironmentConfig = EnvironmentConfig(),
+        constraints: ConstraintConfig = ConstraintConfig(),
     ):
         super().__init__(DefaultDrone)
         self.drone_id = drone_id
@@ -169,6 +188,7 @@ class DroneConfig(BuildableConfig):
         self.controller = controller
         self.integrator = integrator
         self.environment = environment
+        self.constraints = constraints
 
     def construct(self) -> DefaultDrone:
         if self.dynamics is None:
@@ -185,4 +205,5 @@ class DroneConfig(BuildableConfig):
             controller=self.controller.construct(),
             integrator=self.integrator.construct(),
             environment=self.environment.construct(),
+            constraints=self.constraints.construct(),
         )
