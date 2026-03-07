@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  drone_config.toml  –  Fully data-driven drone definition
+# ═══════════════════════════════════════════════════════════════════════════
+#
+#  The [classes] table tells the builder WHICH concrete implementations
+#  to use.  Omit any key to use the only registered class for that slot.
+#  Omit the entire [classes] table if there's only one of each.
+#
+#  Usage:
+#      from quad_sim.toml import load_drone
+#      drone = load_drone("drone_config.toml")
+# ═══════════════════════════════════════════════════════════════════════════
+
+drone_id = "betty"
+
+# ── Which concrete classes to use ────────────────────────────────────────
+# Only needed when multiple implementations are registered for a slot.
+# [classes]
+# drone       = "DefaultDrone"
+# motor       = "DefaultMotor"
+# dynamics    = "DefaultDynamics"
+# pilot       = "DefaultPilot"
+# allocator   = "DefaultAllocator"
+# controller  = "DefaultController"
+# integrator  = "DefaultIntegrator"
+# environment = "DefaultEnvironment"
+# constraints = "DefaultConstraints"
+
+# ── Rigid body ───────────────────────────────────────────────────────────
+[body]
+mass = 1.5
+inertia = [
+    [0.01, 0.0,  0.0 ],
+    [0.0,  0.01, 0.0 ],
+    [0.0,  0.0,  0.02],
+]
+
+# ── Motors ───────────────────────────────────────────────────────────────
+# Each [[motors]] block is forwarded to the motor class constructor.
+# Add `type = "SomeOtherMotor"` to override the motor class per-motor.
+
+[[motors]]
+motor_id        = "m0"
+spin_direction  = 1
+position        = [0.2, 0.0, 0.0]
+kf              = 3e-6
+km              = 1.5e-7
+
+[[motors]]
+motor_id        = "m1"
+spin_direction  = -1
+position        = [0.0, 0.2, 0.0]
+kf              = 3e-6
+km              = 1.5e-7
+
+[[motors]]
+motor_id        = "m2"
+spin_direction  = 1
+position        = [-0.2, 0.0, 0.0]
+kf              = 3e-6
+km              = 1.5e-7
+
+[[motors]]
+motor_id        = "m3"
+spin_direction  = -1
+position        = [0.0, -0.2, 0.0]
+kf              = 3e-6
+km              = 1.5e-7
+
+# ── Integrator ───────────────────────────────────────────────────────────
+[integrator]
+dt = 0.005
+
+# ── Environment effects ──────────────────────────────────────────────────
+# Each [[effects]] block names a registered EnvironmentEffect class.
+
+[[effects]]
+type      = "WindEffect"
+dir       = [1.0, 0.0, 0.0]
+magnitude = 2.0
+
+# ── Constraints ──────────────────────────────────────────────────────────
+# Each [[constraints]] block names a registered Constraint class.
+# Extra keys are forwarded as constructor kwargs.
+
+[[constraints]]
+type  = "GroundPlaneConstraint"
+floor = 0.0
+
+[[constraints]]
+type      = "MaxVelocityConstraint"
+max_speed = 20.0
