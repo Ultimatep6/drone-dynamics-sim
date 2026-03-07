@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from quad_sim.bases.state                    import      StateVector
 from quad_sim.bases.setpoints           import      Setpoints
+from quad_sim.registry import _register
 
 
 class Constraint(ABC):
@@ -32,6 +33,9 @@ class Constraint(ABC):
                 f"{cls.__name__} must subclass either "
                 f"StateConstraint or SetpointConstraint."
             )
+
+        # Auto-register concrete constraints
+        _register("constraint", cls)
 
 
 class StateConstraint(Constraint, ABC):
@@ -65,6 +69,12 @@ class SetpointConstraint(Constraint, ABC):
 
 
 class ConstraintBase(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("constraints", cls)
+
     def __init__(self, constraints: list[Constraint]):
         self.state_constraints: list[StateConstraint] = []
         self.setpoint_constraints: list[SetpointConstraint] = []

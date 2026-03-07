@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
+from quad_sim.registry import _register
 
 class ControllerBase(ABC):
     """
@@ -7,6 +8,12 @@ class ControllerBase(ABC):
     Defines the required methods for connecting, calibrating, reading axis and switch values, and checking connection status.
     Implementations should provide hardware or software-specific logic for these operations.
     """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("controller", cls)
+
     @abstractmethod
     def connect(self) -> bool:
         """

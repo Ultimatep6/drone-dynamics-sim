@@ -4,10 +4,12 @@ from quad_sim.bases.dynamics            import      DynamicsBase
 from quad_sim.bases.controller          import      ControllerBase
 from quad_sim.bases.pilot               import      PilotBase
 from quad_sim.bases.allocator           import      AllocatorBase
-from quad_sim.bases.integrator           import     IntegratorBase
+from quad_sim.bases.integrator          import      IntegratorBase
 from quad_sim.bases.setpoints           import      Setpoints
 from quad_sim.bases.environment         import      EnvironmentBase
-from quad_sim.bases.constraint            import      ConstraintBase
+from quad_sim.bases.constraint          import      ConstraintBase
+from quad_sim.bases.flightmode          import      FlightModeBase
+from quad_sim.registry import _register
 
 
 from quad_sim.bases.state                    import      StateVector
@@ -16,11 +18,17 @@ from quad_sim.bases.state                    import      StateVector
 
 class DroneBase(ABC):
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("drone", cls)
+
     def __init__(
                     self, drone_id: str, init_state:StateVector, pilot: PilotBase,
                     dynamics: DynamicsBase, allocator: AllocatorBase,
                     controller: ControllerBase, integrator: IntegratorBase,
-                    environment: EnvironmentBase, constraints: ConstraintBase
+                    environment: EnvironmentBase, constraints: ConstraintBase,
+                    mode: FlightModeBase
                 ):
         
         if not isinstance(drone_id, str):
@@ -41,6 +49,9 @@ class DroneBase(ABC):
             raise TypeError(f"environment must be a EnvironmentBase subclass, got {type(environment)}")
         if not isinstance(constraints, ConstraintBase):
             raise TypeError(f"constraints must be a ConstraintBase subclass, got {type(constraints)}")
+        if not isinstance(mode, FlightModeBase):
+            raise TypeError(f"mode must be a FlightModeBase subclass, got {type(mode)}")
+
 
         self.iD = drone_id
         self.state = init_state
@@ -50,7 +61,9 @@ class DroneBase(ABC):
         self.controller = controller
         self.integrator = integrator
         self.environment = environment
+        self.flight_mode = mode  # Default flight mode, can be changed as needed
         self.constraints = constraints
+
 
 
     def step(self) -> None:
@@ -67,6 +80,7 @@ class DroneBase(ABC):
         self.state = self.integrator.step(self.state, self.model, self.environment)
 
         self.state = self.constraints.enforce_state_constraints(self.state)
+
 
     @abstractmethod
     def get_setpoints(self) -> Setpoints:

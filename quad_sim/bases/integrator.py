@@ -4,8 +4,15 @@ from quad_sim.bases.state import StateVector
 from quad_sim.bases.dynamics import DynamicsBase,RigidBody
 from quad_sim.bases.environment import EnvironmentBase
 from quad_sim.references.bodyFixed import BodyFixed
+from quad_sim.registry import _register
 
 class IntegratorBase(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("integrator", cls)
+
     def __init__(self, dt: float):
         """
         Standard configuration for all integrators.

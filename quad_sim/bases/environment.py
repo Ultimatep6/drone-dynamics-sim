@@ -3,8 +3,15 @@ from typing import Tuple
 
 from quad_sim.references.bodyFixed import BodyFixed
 from quad_sim.bases.state            import      StateVector
+from quad_sim.registry import _register
 
 class EnvironmentEffect(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("effect", cls)
+
     @abstractmethod
     def apply(self, state:StateVector) -> Tuple[BodyFixed, BodyFixed]:
         """
@@ -13,6 +20,12 @@ class EnvironmentEffect(ABC):
         """
 
 class EnvironmentBase(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("environment", cls)
+
     def __init__(self, effects: list[EnvironmentEffect]):
         self.effects = effects
     

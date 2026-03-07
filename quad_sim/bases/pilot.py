@@ -4,6 +4,7 @@ from typing import Tuple
 from quad_sim.references.bodyFixed import BodyFixed
 from quad_sim.bases.state            import      StateVector
 from quad_sim.bases.setpoints import Setpoints
+from quad_sim.registry import _register
 
 
 class PilotBase(ABC):
@@ -11,6 +12,12 @@ class PilotBase(ABC):
     The Pilot ABC shall do:
         - Receive the inputs of an RController
     """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("pilot", cls)
+
     @abstractmethod
     def compute_control(self, state:StateVector, setpoints: Setpoints) -> Tuple[BodyFixed, BodyFixed]:
         """

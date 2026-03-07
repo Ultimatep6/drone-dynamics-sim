@@ -7,11 +7,18 @@ from quad_sim.bases.motor import MotorBase
 from quad_sim.references.bodyFixed import BodyFixed
 from quad_sim.bases.environment import EnvironmentBase
 from quad_sim.bases.state import StateVector
+from quad_sim.registry import _register
 
 from quad_sim.funcs import compute_aB,compute_alphaB,compute_q_rate
 
 
 class DynamicsBase(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("dynamics", cls)
+
     def __init__(self, body: RigidBody, motors: List[MotorBase]):
         if not isinstance(body, RigidBody):
             raise TypeError(f"body must be an instance of RigidBody, got {type(body)}")

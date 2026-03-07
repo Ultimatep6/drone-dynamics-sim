@@ -1,12 +1,19 @@
 from abc import abstractmethod, ABC
 
 from quad_sim.references.bodyFixed import BodyFixed
+from quad_sim.registry import _register
 
 
 class MotorBase(ABC):
     """
     Base class for motor models in the drone simulation. This class defines the required attributes and methods that any specific motor model must implement.
     """
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("motor", cls)
+
     def __init__(self, id: str, spin_direction: int, position: BodyFixed):
         if not isinstance(id, str):
             raise TypeError(f"id must be a string, got {type(id)}")

@@ -1,9 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 from quad_sim.references.bodyFixed         import      BodyFixed
+from quad_sim.registry import _register
 
 
 class AllocatorBase(ABC):
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            _register("allocator", cls)
 
     @abstractmethod
     def allocate(self, thrust_torques: Tuple[BodyFixed, BodyFixed]) -> list[float]:
